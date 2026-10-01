@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#062e63"><link rel="manifest" href="manifest.json">
+<title>Sewfix MVP</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#edf3fa;color:#10233f}.app{max-width:440px;margin:auto;min-height:100vh;background:#fff;box-shadow:0 0 30px #0001}
+header{background:#062e63;color:#fff;padding:18px 20px;border-radius:0 0 22px 22px}.logo{font-size:28px;font-weight:800}.tag{font-size:12px;opacity:.85}
+main{padding:18px}.screen{display:none}.screen.active{display:block}h2{margin:8px 0}.muted{color:#718096;font-size:13px}
+.hero{background:linear-gradient(135deg,#062e63,#0878f9);color:#fff;padding:24px;border-radius:18px;margin-bottom:16px}.btn{width:100%;border:0;border-radius:12px;padding:14px;margin:8px 0;font-weight:700;font-size:15px;background:#0878f9;color:#fff}.green{background:#16b95b}.light{background:#eaf3ff;color:#0878f9}
+.card,.option{border:1px solid #e2e9f1;border-radius:13px;padding:14px;margin:10px 0}.option{cursor:pointer;display:flex;justify-content:space-between;align-items:center}.selected{border:2px solid #0878f9;background:#f2f8ff}
+input,select{width:100%;padding:13px;border:1px solid #d7e1eb;border-radius:10px;margin:6px 0}.row{display:flex;gap:10px;align-items:center}.avatar{width:46px;height:46px;border-radius:50%;background:#dcecff;display:flex;align-items:center;justify-content:center}.badge{font-size:11px;color:#0a9b4c}
+nav{position:sticky;bottom:0;background:#fff;border-top:1px solid #ddd;display:flex;justify-content:space-around;padding:10px}nav button{border:0;background:none;font-size:12px;color:#53657a}
+.stat{flex:1;background:#f5f9ff;border-radius:12px;padding:12px;text-align:center}.stats{display:flex;gap:8px}.success{background:#eafff1;color:#087a3c;padding:12px;border-radius:10px}
+</style></head><body><div class="app">
+<header><div class="logo">🧵 Sewfix</div><div class="tag">Island Wide Sewing Machine Repair</div></header>
+<main>
+
+<section id="welcome" class="screen active"><div class="hero"><h1>Keep Your Machine Running.</h1><p>Fast, reliable sewing-machine repair across Sri Lanka.</p></div><button class="btn" onclick="show('home')">Get Started</button><button class="btn light" onclick="show('login')">Login</button></section>
+
+<section id="login" class="screen"><h2>Welcome back 👋</h2><input placeholder="Email or phone"><input type="password" placeholder="Password"><button class="btn" onclick="show('home')">Login</button><button class="btn light" onclick="show('signup')">Create Account</button></section>
+<section id="signup" class="screen"><h2>Create Account</h2><input placeholder="Full name"><input placeholder="Phone number"><input placeholder="Email"><input type="password" placeholder="Password"><button class="btn" onclick="show('home')">Sign Up</button></section>
+
+<section id="home" class="screen"><h2>Hello 👋</h2><p class="muted">What can we help you repair?</p><div class="hero"><h2>Find a Mechanic</h2><p>Tell us your machine problem and contact a mechanic directly.</p><button class="btn" style="background:#fff;color:#0878f9" onclick="show('brand')">Start Repair Request</button></div><div class="card"><b>Popular brands</b><p>JUKI · Brother · JACK · Pegasus · Siruba</p></div></section>
+
+<section id="brand" class="screen"><h2>Select Machine Brand</h2><div id="brands"></div><button class="btn" onclick="show('problem')">Next</button></section>
+<section id="problem" class="screen"><h2>Select Problem</h2><p class="muted" id="brandText"></p><div id="problems"></div><button class="btn" onclick="show('media')">Next</button></section>
+<section id="media" class="screen"><h2>Add Photo / Video</h2><p class="muted">Optional. It helps the mechanic understand the problem.</p><div class="card"><input id="media" type="file" accept="image/*,video/*"></div><button class="btn" onclick="show('mechanics')">Continue</button></section>
+
+<section id="mechanics" class="screen"><h2>Available Mechanics</h2><div id="mechanicsList"></div><button class="btn green" onclick="sendWA()">Contact on WhatsApp</button></section>
+<section id="requests" class="screen"><h2>My Requests</h2><div id="myRequests"><div class="card">No repair requests yet.</div></div></section>
+
+<section id="mechanic" class="screen"><h2>🔧 Mechanic Dashboard</h2><div class="stats"><div class="stat"><b id="mTotal">0</b><br><small>Jobs</small></div><div class="stat"><b id="mPending">0</b><br><small>Pending</small></div></div><div id="mechanicJobs"></div><button class="btn light" onclick="show('welcome')">Exit</button></section>
+
+<section id="admin" class="screen"><h2>🛡️ Admin Dashboard</h2><div class="stats"><div class="stat"><b id="aReq">0</b><br><small>Requests</small></div><div class="stat"><b>3</b><br><small>Mechanics</small></div><div class="stat"><b>1</b><br><small>Customer</small></div></div><h3>Recent Requests</h3><div id="adminJobs"></div><button class="btn light" onclick="show('welcome')">Exit</button></section>
+
+</main>
+<nav><button onclick="show('home')">🏠<br>Home</button><button onclick="show('requests')">📋<br>Requests</button><button onclick="show('mechanic')">🔧<br>Mechanic</button><button onclick="show('admin')">🛡️<br>Admin</button></nav>
+</div>
+<script>
+const brands=['JUKI','Brother','JACK','Pegasus','Siruba','SunStar','Other'];
+const probs=['Machine not sewing','Thread breaking','Skipped stitches','Abnormal noise','Motor problem','Electrical issue','Other'];
+const mechanics=[
+{name:'Nimal Perera',phone:'94770000000',area:'Colombo',skills:'JUKI, Brother, JACK'},
+{name:'Saman Wijesinghe',phone:'94771111111',area:'Negombo',skills:'JUKI, Brother'},
+{name:'Ruwan Silva',phone:'94772222222',area:'Dehiwala',skills:'JACK, Pegasus'}];
+let brand='',problem='',selected=null,requests=JSON.parse(localStorage.getItem('sewfixRequests')||'[]');
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');render();scrollTo(0,0)}
+function build(){
+document.getElementById('brands').innerHTML=brands.map(x=>`<div class="option" onclick="pickBrand(this,'${x}')"><b>${x}</b><span>›</span></div>`).join('');
+document.getElementById('problems').innerHTML=probs.map(x=>`<div class="option" onclick="pickProblem(this,'${x}')">${x}<span>○</span></div>`).join('');
+document.getElementById('mechanicsList').innerHTML=mechanics.map((m,i)=>`<div class="option" onclick="pickMechanic(this,${i})"><div class="row"><div class="avatar">👨‍🔧</div><div><b>${m.name}</b><br><small>⭐ 4.${8-i} · ${m.area}<br>${m.skills}</small><br><span class="badge">● Online</span></div></div><span>›</span></div>`).join('');
+}
+function pickBrand(el,x){document.querySelectorAll('#brands .option').forEach(e=>e.classList.remove('selected'));el.classList.add('selected');brand=x;document.getElementById('brandText').textContent='Brand: '+brand}
+function pickProblem(el,x){document.querySelectorAll('#problems .option').forEach(e=>e.classList.remove('selected'));el.classList.add('selected');problem=x}
+function pickMechanic(el,i){document.querySelectorAll('#mechanicsList .option').forEach(e=>e.classList.remove('selected'));el.classList.add('selected');selected=mechanics[i]}
+function sendWA(){
+if(!selected){alert('Please select a mechanic.');return}
+const r={id:Date.now(),brand,problem,mechanic:selected.name,status:'Pending',date:new Date().toLocaleString()};
+requests.unshift(r);localStorage.setItem('sewfixRequests',JSON.stringify(requests));
+const msg=`Hello ${selected.name}, I need sewing machine repair.%0ABrand: ${brand}%0AProblem: ${problem}%0AI will send photos/videos here.`;
+show('requests');setTimeout(()=>window.open('https://wa.me/'+selected.phone+'?text='+msg,'_blank'),200);
+}
+function render(){
+document.getElementById('myRequests').innerHTML=requests.length?requests.map(r=>`<div class="card"><b>${r.brand} — ${r.problem}</b><p class="muted">Mechanic: ${r.mechanic}<br>${r.date}</p><span class="badge">${r.status}</span></div>`).join(''):'<div class="card">No repair requests yet.</div>';
+document.getElementById('mTotal').textContent=requests.length;document.getElementById('mPending').textContent=requests.filter(r=>r.status==='Pending').length;
+document.getElementById('mechanicJobs').innerHTML=requests.map((r,i)=>`<div class="card"><b>${r.brand} — ${r.problem}</b><p class="muted">Customer repair request</p><select onchange="status(${i},this.value)"><option ${r.status==='Pending'?'selected':''}>Pending</option><option ${r.status==='In Progress'?'selected':''}>In Progress</option><option ${r.status==='Completed'?'selected':''}>Completed</option></select></div>`).join('');
+document.getElementById('aReq').textContent=requests.length;
+document.getElementById('adminJobs').innerHTML=requests.map(r=>`<div class="card"><b>${r.brand} — ${r.problem}</b><p class="muted">Mechanic: ${r.mechanic}<br>Status: ${r.status}</p></div>`).join('')||'<div class="card">No requests yet.</div>';
+}
+function status(i,v){requests[i].status=v;localStorage.setItem('sewfixRequests',JSON.stringify(requests));render()}
+build();render();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+</script></body></html>
